@@ -5,6 +5,8 @@ import openai
 from datetime import datetime
 import argparse
 import logging
+from pathlib import Path
+from gtts import gTTS
 
 # Configure logging
 logging.basicConfig(
@@ -28,7 +30,6 @@ if not api_key:
 # Set OpenAI API key
 openai.api_key = api_key  # Ensure API key is set after importing openai
 
-
 class FileWriter:
     """Class to handle writing text to files."""
 
@@ -47,7 +48,6 @@ class FileWriter:
         with open(file_path, "w") as f:
             f.write(content)
         logging.info(f"Content saved to {file_path}")
-
 
 class AudioProcessor:
     """Class to process audio files for transcription and summarization."""
@@ -73,8 +73,8 @@ class AudioProcessor:
             response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are an assistant that summarizes texts."},
-                    {"role": "user", "content": f"Summarize the following text: {text}"}
+                    {"role": "system", "content": "You are an assistant that summarizes texts in French."},
+                    {"role": "user", "content": f"Summarize the following text always in French: {text}"}
                 ],
                 max_tokens=800
             )
@@ -84,6 +84,16 @@ class AudioProcessor:
         except Exception as e:
             logging.error(f"Error summarizing text: {e}")
             return ""
+        
+    def text_to_speech(self, text: str, file_path: str, language: str = 'fr'):
+        """Convert text to speech using gTTS and save to file."""
+        try:
+            # Use the language parameter when creating the gTTS object
+            tts = gTTS(text, lang=language)
+            tts.save(file_path)
+            logging.info(f"Audio saved to {file_path}")
+        except Exception as e:
+            logging.error(f"Error converting text to speech: {e}")
 
 
 def generate_output_filename(base_name: str, suffix: str, extension: str) -> str:
@@ -91,12 +101,10 @@ def generate_output_filename(base_name: str, suffix: str, extension: str) -> str
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"{base_name}_{suffix}_{timestamp}.{extension}"
 
-
 def is_supported_format(file_path: str) -> bool:
     """Check if the file format is supported."""
     supported_formats = ('.mp3', '.mp4', '.mpeg', '.mpga', '.m4a', '.wav', '.webm')
     return file_path.lower().endswith(supported_formats)
-
 
 def parse_arguments():
     """Parse command-line arguments."""
@@ -104,7 +112,6 @@ def parse_arguments():
         description="Transcribe and summarize audio files.")
     parser.add_argument("file_path", type=str, help="Path to the audio file")
     return parser.parse_args()
-
 
 def main():
     # Parse command-line arguments
@@ -135,7 +142,7 @@ def main():
     logging.debug(text)
 
     # Save the transcription to a file
-    transcription_writer = FileWriter("audio_transcription")
+    transcription_writer = FileWriter("text_transcription")
     transcription_filename = generate_output_filename(
         base_name, "transcription", "txt")
     transcription_writer.write_to_file(transcription_filename, text)
@@ -147,10 +154,13 @@ def main():
     logging.debug(summary)
 
     # Save the summary to a file
-    summary_writer = FileWriter("audio_summarize")
+    summary_writer = FileWriter("text_summarize")
     summary_filename = generate_output_filename(base_name, "summary", "txt")
     summary_writer.write_to_file(summary_filename, summary)
 
+    # Convert the summary to speech and save the audio
+    audio_file_path = Path("audio_summarize") / generate_output_filename(base_name, "summary", "mp3")
+    audio_processor.text_to_speech(summary, str(audio_file_path))
 
 if __name__ == "__main__":
     main()

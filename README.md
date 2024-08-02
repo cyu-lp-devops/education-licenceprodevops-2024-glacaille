@@ -1,7 +1,7 @@
 
 # Audio Transcription and Summarization
 
-This project is designed to transcribe and summarize audio files using OpenAI's Whisper and GPT models. The application processes audio files, transcribes them into text, and generates a summary of the transcribed text. This guide will walk you through setting up and running the program using Docker.
+This project is designed to transcribe and summarize audio files using OpenAI's Whisper and GPT models. The application processes audio files, transcribes them into text, and generates a summary of the transcribed text with an audio file. This guide will walk you through setting up and running the program using Docker.
 
 ## Prerequisites
 
@@ -60,8 +60,9 @@ docker run --rm -v $(pwd):/app -e OPENAI_API_KEY=your_api_key_here audio-summary
 
 The program will generate two output files in the working directory:
 
-1. **Transcription File**: Contains the transcribed text from the audio file.
-2. **Summary File**: Contains the summarized text of the transcription.
+1. **Transcription Text**: Contains the transcribed text from the audio file.
+2. **Summary Text**: Contains the summarized text of the transcription.
+1. **Summary Audio**: Contains the summarized audio of the transcription.
 
 The filenames will follow the format: `<base_name>_transcription_<timestamp>.txt` and `<base_name>_summary_<timestamp>.txt`.
 

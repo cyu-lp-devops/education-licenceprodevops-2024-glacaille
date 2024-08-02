@@ -29,5 +29,4 @@ COPY . /app
 # EXPOSE 8000
 
 # Run the main Python script
-
 ENTRYPOINT ["python", "audio_summary.py"]
